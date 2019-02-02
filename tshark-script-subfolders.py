@@ -1,10 +1,8 @@
 import csv
-
 from scapy.all import *
 import glob
 import os
 import numpy as np
-
 from scapy.layers.inet import TCP, IP
 
 dir_path = '/home/yoanapaleva/PycharmProjects/networking-data-prep/'
@@ -26,8 +24,8 @@ for folder in folders:
         print('File: ', file)
         filename = os.path.basename(file).split('.')[0] + '.csv'
         # with open(filename, 'w') as csvfile:
-        #     csv_writer = csv.writer(csvfile, delimiter=',',
-        #                             quoting=csv.QUOTE_ALL)
+        #     csv_writer = csv.writer(csvfile, delimiter=',')
+        #                             #quoting=csv.QUOTE_ALL)
         #     csv_writer.writerow(['src_ip', 'src_port', 'dst_ip', 'dst_port', 'payload_size', 'time'])
 
         packets = rdpcap(file)

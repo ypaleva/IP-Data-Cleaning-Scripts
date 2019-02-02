@@ -30,9 +30,9 @@ def normalize_st_dev(df):
     return result
 
 
-dir_path = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Malicious-Binary-Scaled'
+dir_path = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Malicious_CSVs_Cropped'
 os.makedirs(dir_path)
-files = glob.glob('/home/yoanapaleva/PycharmProjects/networking-data-prep/*.csv')
+files = glob.glob('/home/yoanapaleva/PycharmProjects/networking-data-prep/Malicious_CSVs_Binary/*.csv')
 
 scaler = StandardScaler()
 
@@ -70,9 +70,9 @@ for file in files:
 
     df.drop(['conn_#', 'host_a', 'host_b', 'port_a', 'port_b', 'first_packet', 'last_packet'], axis=1, inplace=True)
 
-    df = df.applymap(lambda x: pd.to_numeric(x,errors='coerce'))
+    df = df.applymap(lambda x: pd.to_numeric(x, errors='coerce'))
 
-    scaled = scaler.fit_transform(df)
+    # scaled = scaler.fit_transform(df)
 
     # df = normalize_st_dev(df)
 
@@ -81,5 +81,5 @@ for file in files:
 
     os.chdir(dir_path)
 
-    new_filename = os.path.basename(file).split('.')[0] + '-scaled'
-    pd.DataFrame(scaled).to_csv(new_filename + '.csv', index=False)
+    new_filename = os.path.basename(file).split('.')[0] + '-cropped'
+    pd.DataFrame(df).to_csv(new_filename + '.csv', index=False)
