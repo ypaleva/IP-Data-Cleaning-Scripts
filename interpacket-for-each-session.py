@@ -4,7 +4,7 @@ from scapy.all import *
 import glob
 import statistics
 import os
-import numpy as np  #
+import numpy as np
 from scapy.layers.inet import TCP, IP
 
 files = glob.glob('/home/yoanapaleva/PycharmProjects/networking-data-prep/deauth_1-demultiplexed/*.pcap')

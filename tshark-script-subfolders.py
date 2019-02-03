@@ -15,7 +15,6 @@ arr = []
 for folder in folders:
 
     print('Folder: ', folder)
-
     folder_path = directory + folder + '/'
     os.chdir(folder_path)
     files = glob.glob(folder_path + '*.pcap')
