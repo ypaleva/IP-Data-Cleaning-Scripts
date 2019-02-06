@@ -3,22 +3,21 @@ import os
 import shutil
 import subprocess
 
-dir_path = '/home/yoanapaleva/PycharmProjects/networking-data-prep/'
+dir_path = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Reduced_Malicious/'
 perl_script = '/home/yoanapaleva/PycharmProjects/networking-data-prep/split-pcap.pl'
 files = glob.glob(dir_path + '*.pcap')
 
 for file in files:
     demultiplex_dir = os.path.basename(file).split('.')[0] + '-demultiplexed'
+    path = dir_path+demultiplex_dir+'/'
+    os.makedirs(path)
+    os.chdir(path)
+
     print('Demultiplexing file: ', file)
-
-    os.makedirs(demultiplex_dir)
-    os.chdir(demultiplex_dir)
-
+    print(os.path.basename(file).split('.')[0] + '.pcap')
     shutil.copy(file, os.path.basename(file).split('.')[0] + '.pcap')
-    # print(os.path.basename(file).split('.')[0] + '.pcap')
 
-    pcap_file = str(dir_path + demultiplex_dir + '/*.pcap')
-    print('PCAP file: ', pcap_file)
+    pcap_file = path+ '*.pcap'
     pcap = glob.glob(pcap_file)[0]
 
     pipe = subprocess.Popen(["perl", perl_script, "sll", pcap], stdout=subprocess.PIPE)

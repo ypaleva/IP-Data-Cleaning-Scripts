@@ -2,7 +2,6 @@ import csv
 import glob
 import os
 import statistics
-
 from scapy.layers.inet import TCP, IP
 from scapy.utils import rdpcap
 

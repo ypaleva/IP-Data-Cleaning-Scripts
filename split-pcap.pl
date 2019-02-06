@@ -101,11 +101,11 @@ sub processPacket {
                         ord (substr($pkt, $typeOffset+2+$ipHeaderLen+3, 1));
 
           if ($tcpSrcPort < $tcpDstPort) {
-             $fourTupleKey = $ipSrcAddr . ":" . $tcpSrcPort . "-" .
-                             $ipDstAddr . ":" . $tcpDstPort;
+             $fourTupleKey = $ipSrcAddr . "-" .
+                             $ipDstAddr ;
           } else {
-             $fourTupleKey = $ipDstAddr . ":" . $tcpDstPort . "-" .
-                             $ipSrcAddr . ":" . $tcpSrcPort;
+             $fourTupleKey = $ipDstAddr .  "-" .
+                             $ipSrcAddr ;
           }
 
           if ($fourTuple{$fourTupleKey}) {   # file for 4 tuple already open ?
