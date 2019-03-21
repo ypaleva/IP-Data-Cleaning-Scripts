@@ -8,7 +8,7 @@ from collections import defaultdict
 from scapy.layers.inet import TCP, IP
 from scapy.utils import rdpcap
 
-dir_path = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Reduced-Demultiplexed-Interflow/Reduced_Benign'
+dir_path = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Interflow-based/Full-Demultiplexed-Interflow/Full_Malicious/new'
 directory = dir_path + '/'
 
 print('Directory: ', directory)
@@ -39,7 +39,7 @@ for folder in folders:
 
         for file in files:
             filename = os.path.basename(file)
-            print(filename)
+            # print(filename)
             val = filename
             val = val.replace('.pcap', '')
             split = val.split('-')

@@ -5,7 +5,7 @@ import statistics
 from scapy.layers.inet import TCP, IP
 from scapy.utils import rdpcap
 
-dir_path = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Minimal-Demultiplexed-Interpacket/Minimal_Malicious-Demultiplexed'
+dir_path = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Interflow-based/Full-Demultiplexed-Interflow/Full_Malicious'
 directory = dir_path + '/'
 
 print('Directory: ', directory)
