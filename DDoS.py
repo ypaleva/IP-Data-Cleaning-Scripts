@@ -1,93 +1,96 @@
 import glob
-import os
 import timeit
+
 import pandas as pd
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.utils import shuffle
 
-path_active_normal = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Header-based/Normal_CSVs_Cropped/active-cropped.csv'
-path_full_random_normal = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Header-based/Normal_CSVs_Cropped/full-benign-random-cropped.csv'
-path_full_structured_normal = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Header-based/Normal_CSVs_Cropped/full-benign-structured-cropped.csv'
-path_minimal_normal = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Header-based/Normal_CSVs_Cropped/minimal-benign-cropped.csv'
-path_reduced_normal = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Header-based/Normal_CSVs_Cropped/reduced-benign-cropped.csv'
+path_active_normal = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Interpacket-based/Active-Demultiplexed-Interpacket/Active-Interpacket-CSVs/'
+path_full_random_normal = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Interpacket-based/Full-Demultiplexed/ALL-Full-CSVs/Full_Benign_Random-Interpacket-CSVs/'
+path_full_structured_normal = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Interpacket-based/Full-Demultiplexed/ALL-Full-CSVs/Full_Benign_Structured-Interpacket-CSVs/'
+path_minimal_normal = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Interpacket-based/Minimal-Demultiplexed-Interpacket/ALL-Minimal-CSVs/Minimal_Benign-Interpacket-CSVs/'
+path_reduced_normal = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Interpacket-based/Reduced-Demultiplexed/ALL-Reduced-CSVs/Reduced_Benign-Interpacket-CSVs/'
 
-path_minimal_dos = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Header-based/Minimal_Attacks/dos/'
-path_reduced_dos = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Header-based/Reduced_Attacks/dos/'
+path_minimal_dos = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Interpacket-based/Minimal_Attacks/dos/'
+path_reduced_dos = '/home/yoanapaleva/PycharmProjects/networking-data-prep/Interpacket-based/Reduced_Attacks/dos/'
 
-df_active_normal = pd.read_csv(path_active_normal)
-df_active_normal = df_active_normal[
-    ['total_packets_a2b', 'total_packets_b2a', 'unique_bytes_sent_a2b', 'unique_bytes_sent_b2a',
-     'actual_data_bytes_a2b', 'actual_data_bytes_b2a', 'rexmt_data_bytes_a2b', 'rexmt_data_bytes_b2a',
-     'idletime_max_a2b', 'idletime_max_b2a', 'ttl_stream_length_a2b', 'ttl_stream_length_b2a',
-     'max_segm_size_a2b', 'max_segm_size_b2a', 'ack_pkts_sent_a2b', 'resets_sent_a2b', 'pushed_data_pkts_a2b',
-     'SYN_pkts_sent_a2b', 'FIN_pkts_sent_a2b', 'SYN_pkts_sent_b2a', 'FIN_pkts_sent_b2a', 'initial_window_bytes_a2b',
-     'initial_window_bytes_b2a', 'throughput_a2b', 'throughput_b2a', 'max_retr_time_a2b',
-     'missed_data_a2b', 'missed_data_b2a']]
+df_active_normal = pd.concat([pd.read_csv(f, low_memory=False) for f in glob.glob(path_active_normal + '*.csv')],
+                             ignore_index=True)
 print("Active normal shape: ", df_active_normal.shape)
-df_full_random_normal = pd.read_csv(path_full_random_normal)
-df_full_random_normal = df_full_random_normal[
-    ['total_packets_a2b', 'total_packets_b2a', 'unique_bytes_sent_a2b', 'unique_bytes_sent_b2a',
-     'actual_data_bytes_a2b', 'actual_data_bytes_b2a', 'rexmt_data_bytes_a2b', 'rexmt_data_bytes_b2a',
-     'idletime_max_a2b', 'idletime_max_b2a', 'ttl_stream_length_a2b', 'ttl_stream_length_b2a',
-     'max_segm_size_a2b', 'max_segm_size_b2a', 'ack_pkts_sent_a2b', 'resets_sent_a2b', 'pushed_data_pkts_a2b',
-     'SYN_pkts_sent_a2b', 'FIN_pkts_sent_a2b', 'SYN_pkts_sent_b2a', 'FIN_pkts_sent_b2a', 'initial_window_bytes_a2b',
-     'initial_window_bytes_b2a', 'throughput_a2b', 'throughput_b2a', 'max_retr_time_a2b',
-     'missed_data_a2b', 'missed_data_b2a']]
-
+df_full_random_normal = pd.concat(
+    [pd.read_csv(f, low_memory=False) for f in glob.glob(path_full_random_normal + '*.csv')],
+    ignore_index=True)
 print("Full random normal shape: ", df_full_random_normal.shape)
-df_full_structured_normal = pd.read_csv(path_full_structured_normal)
-df_full_structured_normal = df_full_structured_normal[
-    ['total_packets_a2b', 'total_packets_b2a', 'unique_bytes_sent_a2b', 'unique_bytes_sent_b2a',
-     'actual_data_bytes_a2b', 'actual_data_bytes_b2a', 'rexmt_data_bytes_a2b', 'rexmt_data_bytes_b2a',
-     'idletime_max_a2b', 'idletime_max_b2a', 'ttl_stream_length_a2b', 'ttl_stream_length_b2a',
-     'max_segm_size_a2b', 'max_segm_size_b2a', 'ack_pkts_sent_a2b', 'resets_sent_a2b', 'pushed_data_pkts_a2b',
-     'SYN_pkts_sent_a2b', 'FIN_pkts_sent_a2b', 'SYN_pkts_sent_b2a', 'FIN_pkts_sent_b2a', 'initial_window_bytes_a2b',
-     'initial_window_bytes_b2a', 'throughput_a2b', 'throughput_b2a', 'max_retr_time_a2b',
-     'missed_data_a2b', 'missed_data_b2a']]
-
+df_full_structured_normal = pd.concat(
+    [pd.read_csv(f, low_memory=False) for f in glob.glob(path_full_structured_normal + '*.csv')],
+    ignore_index=True)
 print("Full structured normal shape: ", df_full_structured_normal.shape)
-df_minimal_normal = pd.read_csv(path_minimal_normal)
-df_minimal_normal = df_minimal_normal[
-    ['total_packets_a2b', 'total_packets_b2a', 'unique_bytes_sent_a2b', 'unique_bytes_sent_b2a',
-     'actual_data_bytes_a2b', 'actual_data_bytes_b2a', 'rexmt_data_bytes_a2b', 'rexmt_data_bytes_b2a',
-     'idletime_max_a2b', 'idletime_max_b2a', 'ttl_stream_length_a2b', 'ttl_stream_length_b2a',
-     'max_segm_size_a2b', 'max_segm_size_b2a', 'ack_pkts_sent_a2b', 'resets_sent_a2b', 'pushed_data_pkts_a2b',
-     'SYN_pkts_sent_a2b', 'FIN_pkts_sent_a2b', 'SYN_pkts_sent_b2a', 'FIN_pkts_sent_b2a', 'initial_window_bytes_a2b',
-     'initial_window_bytes_b2a', 'throughput_a2b', 'throughput_b2a', 'max_retr_time_a2b',
-     'missed_data_a2b', 'missed_data_b2a']]
-
+df_minimal_normal = pd.concat([pd.read_csv(f, low_memory=False) for f in glob.glob(path_minimal_normal + '*.csv')],
+                              ignore_index=True)
 print("Minimal normal shape: ", df_minimal_normal.shape)
-df_reduced_normal = pd.read_csv(path_reduced_normal)
-df_reduced_normal = df_reduced_normal[
-    ['total_packets_a2b', 'total_packets_b2a', 'unique_bytes_sent_a2b', 'unique_bytes_sent_b2a',
-     'actual_data_bytes_a2b', 'actual_data_bytes_b2a', 'rexmt_data_bytes_a2b', 'rexmt_data_bytes_b2a',
-     'idletime_max_a2b', 'idletime_max_b2a', 'ttl_stream_length_a2b', 'ttl_stream_length_b2a',
-     'max_segm_size_a2b', 'max_segm_size_b2a', 'ack_pkts_sent_a2b', 'resets_sent_a2b', 'pushed_data_pkts_a2b',
-     'SYN_pkts_sent_a2b', 'FIN_pkts_sent_a2b', 'SYN_pkts_sent_b2a', 'FIN_pkts_sent_b2a', 'initial_window_bytes_a2b',
-     'initial_window_bytes_b2a', 'throughput_a2b', 'throughput_b2a', 'max_retr_time_a2b',
-     'missed_data_a2b', 'missed_data_b2a']]
-
+df_reduced_normal = pd.concat([pd.read_csv(f, low_memory=False) for f in glob.glob(path_reduced_normal + '*.csv')],
+                              ignore_index=True)
 print("Reduced normal shape: ", df_reduced_normal.shape)
+
 print()
+
 df_minimal_dos = pd.concat([pd.read_csv(f, low_memory=False) for f in glob.glob(path_minimal_dos + '*.csv')],
                            ignore_index=True)
-df_minimal_dos = df_minimal_dos[
-    ['total_packets_a2b', 'total_packets_b2a', 'unique_bytes_sent_a2b', 'unique_bytes_sent_b2a',
-     'actual_data_bytes_a2b', 'actual_data_bytes_b2a', 'rexmt_data_bytes_a2b', 'rexmt_data_bytes_b2a',
-     'idletime_max_a2b', 'idletime_max_b2a', 'ttl_stream_length_a2b', 'ttl_stream_length_b2a',
-     'max_segm_size_a2b', 'max_segm_size_b2a', 'ack_pkts_sent_a2b', 'resets_sent_a2b', 'pushed_data_pkts_a2b',
-     'SYN_pkts_sent_a2b', 'FIN_pkts_sent_a2b', 'SYN_pkts_sent_b2a', 'FIN_pkts_sent_b2a', 'initial_window_bytes_a2b',
-     'initial_window_bytes_b2a', 'throughput_a2b', 'throughput_b2a', 'max_retr_time_a2b',
-     'missed_data_a2b', 'missed_data_b2a']]
-
 print("Minimal DOS shape: ", df_minimal_dos.shape)
 df_reduced_dos = pd.concat([pd.read_csv(f, low_memory=False) for f in glob.glob(path_reduced_dos + '*.csv')],
                            ignore_index=True)
-df_reduced_dos = df_reduced_dos[
-    ['total_packets_a2b', 'total_packets_b2a', 'unique_bytes_sent_a2b', 'unique_bytes_sent_b2a',
-     'actual_data_bytes_a2b', 'actual_data_bytes_b2a', 'rexmt_data_bytes_a2b', 'rexmt_data_bytes_b2a',
-     'idletime_max_a2b', 'idletime_max_b2a', 'ttl_stream_length_a2b', 'ttl_stream_length_b2a',
-     'max_segm_size_a2b', 'max_segm_size_b2a', 'ack_pkts_sent_a2b', 'resets_sent_a2b', 'pushed_data_pkts_a2b',
-     'SYN_pkts_sent_a2b', 'FIN_pkts_sent_a2b', 'SYN_pkts_sent_b2a', 'FIN_pkts_sent_b2a', 'initial_window_bytes_a2b',
-     'initial_window_bytes_b2a', 'throughput_a2b', 'throughput_b2a', 'max_retr_time_a2b',
-     'missed_data_a2b', 'missed_data_b2a']]
-
 print("Reduced DOS shape: ", df_reduced_dos.shape)
+
+active_normal_sample = df_active_normal.sample(3000, random_state=42)
+active_normal_sample['Target'] = 0
+full_random_normal_sample = df_full_random_normal.sample(5000, random_state=42)
+full_random_normal_sample['Target'] = 0
+full_structured_normal_sample = df_full_structured_normal.sample(4000, random_state=42)
+full_structured_normal_sample['Target'] = 0
+minimal_normal_sample = df_minimal_normal.sample(3000, random_state=42)
+minimal_normal_sample['Target'] = 0
+reduced_normal_sample = df_reduced_normal.sample(5000, random_state=42)
+reduced_normal_sample['Target'] = 0
+
+minimal_dos_sample = df_minimal_dos.sample(10000, random_state=42)
+minimal_dos_sample['Target'] = 1
+reduced_dos_sample = df_reduced_dos.sample(10000, random_state=42)
+reduced_dos_sample['Target'] = 1
+
+final_set = [active_normal_sample, full_random_normal_sample, full_structured_normal_sample, minimal_normal_sample,
+             reduced_normal_sample, minimal_dos_sample, reduced_dos_sample]
+
+final = pd.concat(final_set)
+final = shuffle(final)
+
+target = final.iloc[:, -1]
+final.drop(['Target'], inplace=True, axis=1)
+
+X_train, X_test, y_train, y_test = train_test_split(final, target, test_size=0.2, random_state=42)
+
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+scaled = sc.fit_transform(final)
+
+start = timeit.default_timer()
+
+clf = SVC()
+clf.fit(X_train, y_train)
+
+predicted = clf.predict(X_test)
+print(classification_report(y_test, predicted))
+# final_scaled = sc.fit_transform(final)
+# scores = cross_val_score(clf, final_scaled, target, cv=5, scoring='roc_auc')
+# print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+print()
+print("Confusion matrix: ", confusion_matrix(y_test, predicted))
+tn, fp, fn, tp = confusion_matrix(y_test, predicted).ravel()
+print("TP: ", tp, ", TN: ", tn, "FP: ", fp, "FN: ", fn)
+print("ROC AUC: ", roc_auc_score(y_test, predicted))
+end = timeit.default_timer()
+print('Runtime: ', end - start)
